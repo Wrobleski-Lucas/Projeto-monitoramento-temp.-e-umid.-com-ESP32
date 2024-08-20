@@ -1,0 +1,101 @@
+//By Lucas de Jesus Wrobleski
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <DHT.h>
+
+// Definições dos sensores DHT22
+#define DHTPIN1 4 // Pino de dados do primeiro sensor DHT22
+#define DHTPIN2 5 // Pino de dados do segundo sensor DHT22
+#define DHTTYPE DHT22
+
+// Definições para as portas SDA e SCL
+#define SDA_PIN 25
+#define SCL_PIN 26
+
+// Inicializa os sensores DHT
+DHT dht1(DHTPIN1, DHTTYPE);
+DHT dht2(DHTPIN2, DHTTYPE);
+
+// Inicializa o display LCD I2C
+LiquidCrystal_I2C lcd(0x27, 20, 4); // Endereço I2C, colunas, linhas
+
+void setup() {
+  // Inicializa a comunicação serial
+  Serial.begin(115200);
+
+  // Inicializa os sensores DHT
+  dht1.begin();
+  dht2.begin();
+
+  // Inicializa o barramento I2C
+  Wire.begin(SDA_PIN, SCL_PIN);
+
+  // Inicializa o display LCD
+  lcd.init();
+  lcd.backlight();
+
+  // Mensagem inicial
+  lcd.setCursor(0, 0);
+  lcd.print("Inicializando...");
+  delay(2000);
+  lcd.clear();
+}
+
+void loop() {
+  // Lê a umidade e a temperatura do primeiro sensor DHT22
+  float h1 = dht1.readHumidity();
+  float t1 = dht1.readTemperature();
+
+  // Lê a umidade e a temperatura do segundo sensor DHT22
+  float h2 = dht2.readHumidity();
+  float t2 = dht2.readTemperature();
+
+  // Verifica se as leituras falharam
+  if (isnan(h1) || isnan(t1) || isnan(h2) || isnan(t2)) {
+    Serial.println("Falha na leitura dos sensores DHT!");
+    lcd.setCursor(0, 0);
+    lcd.print("Erro na leitura");
+    return;
+  }
+
+  // Exibe os valores no display LCD
+  //lcd.setCursor(0, 0);
+  //lcd.print("Sensor 1:");
+  lcd.setCursor(0, 0);
+  lcd.print("Temp1: ");
+  lcd.print(t1);
+  lcd.print(" C");
+  lcd.setCursor(0, 1);
+  lcd.print("Umid1: ");
+  lcd.print(h1);
+  lcd.print(" %");
+
+  //lcd.setCursor(0, 3);
+  //lcd.print("Sensor 2:");
+  lcd.setCursor(1, 2);
+  lcd.print("Temp2: ");
+  lcd.print(t2);
+  lcd.print(" C");
+  lcd.setCursor(1, 3);
+  lcd.print("Umid2: ");
+  lcd.print(h2);
+  lcd.print(" %");
+
+  // Exibe os valores no monitor serial
+  Serial.print("Sensor 1 - Temperatura: ");
+  Serial.print(t1);
+  Serial.println(" *C");
+  Serial.print("Sensor 1 - Umidade: ");
+  Serial.print(h1);
+  Serial.println(" %");
+
+  Serial.print("Sensor 2 - Temperatura: ");
+  Serial.print(t2);
+  Serial.println(" *C");
+  Serial.print("Sensor 2 - Umidade: ");
+  Serial.print(h2);
+  Serial.println(" %");
+
+  // Espera 2 segundos antes de fazer a próxima leitura
+  delay(2000);
+}
